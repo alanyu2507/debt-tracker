@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DEBT TRACKER — ALAN × EDISON</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* ─── TOKENS ─────────────────────────────────────── */
+    :root {
+      --cream:        #E8E0D0;
+      --cream-dark:   #D6CDBF;
+      --cream-deep:   #C8BFB0;
+      --charcoal:     #1A1A1A;
+      --charcoal-mid: #242424;
+      --charcoal-dim: #2E2E2E;
+      --orange:       #C4521A;
+      --orange-dim:   rgba(196, 82, 26, 0.15);
+      --muted:        #7A7468;
+      --muted-light:  rgba(232, 224, 208, 0.35);
+      --serif:        'Playfair Display', Georgia, serif;
+      --mono:         'Space Mono', 'Courier New', monospace;
+    }
+
+    /* ─── RESET ──────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      background: var(--charcoal);
+      color: var(--cream);
+      font-family: var(--mono);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── HEADER ─────────────────────────────────────── */
+    .site-header {
+      background: var(--charcoal);
+      border-bottom: 1px solid rgba(232,224,208,0.18);
+      padding: 28px 24px 20px;
+      position: relative;
+    }
+
+    .hdr-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .site-title {
+      font-family: var(--serif);
+      font-size: clamp(42px, 10vw, 80px);
+      font-weight: 900;
+      line-height: 0.88;
+      letter-spacing: -0.025em;
+      color: var(--cream);
+    }
+
+    .hdr-index {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      color: var(--muted-light);
+      margin-top: 4px;
+    }
+
+    .hdr-meta {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px dotted rgba(232,224,208,0.2);
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      color: var(--muted-light);
+    }
+
+    /* registration marks */
+    .reg { position: absolute; width: 14px; height: 14px; border-color: rgba(232,224,208,0.2); border-style: solid; }
+    .reg-tl { top: 8px; left: 8px;  border-width: 1px 0 0 1px; }
+    .reg-tr { top: 8px; right: 8px; border-width: 1px 1px 0 0; }
+    .reg-bl { bottom: 8px; left: 8px;  border-width: 0 0 1px 1px; }
+    .reg-br { bottom: 8px; right: 8px; border-width: 0 1px 1px 0; }
+
+    /* ─── TABS ───────────────────────────────────────── */
+    .tab-nav {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--charcoal-mid);
+      border-bottom: 1px solid rgba(232,224,208,0.12);
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      border-right: 1px solid rgba(232,224,208,0.12);
+      color: var(--muted-light);
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      padding: 13px 20px;
+      text-transform: uppercase;
+      text-align: left;
+      transition: color 0.12s;
+      position: relative;
+    }
+    .tab-btn:last-child { border-right: none; }
+    .tab-btn::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: transparent;
+      transition: background 0.12s;
+    }
+    .tab-btn.active { color: var(--cream); }
+    .tab-btn.active::after { background: var(--orange); }
+    .tab-btn:hover:not(.active) { color: rgba(232,224,208,0.6); }
+
+    /* ─── VIEWS ──────────────────────────────────────── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ─── SECTION LABEL ──────────────────────────────── */
+    .sec-label {
+      font-family: var(--mono);
+      font-size: 8.5px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+    .sec-label::after {
+      content: '';
+      flex: 1;
+      border-top: 1px dotted var(--muted);
+      opacity: 0.5;
+    }
+
+    /* ─── BALANCE VIEW ───────────────────────────────── */
+    #balance-view {
+      background: var(--cream);
+      color: var(--charcoal);
+    }
+
+    /* balance hero */
+    .balance-hero {
+      padding: 32px 24px 28px;
+      border-bottom: 1px dotted rgba(26,26,26,0.25);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .balance-left { min-width: 0; }
+
+    .balance-amount {
+      font-family: var(--serif);
+      font-size: clamp(54px, 16vw, 104px);
+      font-weight: 900;
+      line-height: 0.85;
+      letter-spacing: -0.03em;
+      color: var(--charcoal);
+      word-break: break-all;
+    }
+
+    .balance-tag {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 5px 10px;
+      font-size: 8.5px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-family: var(--mono);
+    }
+    .balance-tag.edison-owes { background: var(--orange); color: #fff; }
+    .balance-tag.i-owe { background: var(--charcoal); color: var(--cream); }
+    .balance-tag.settled { background: #4E7D60; color: #fff; }
+
+    .balance-meta {
+      margin-top: 10px;
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    /* target diagram */
+    .target-svg {
+      width: 88px;
+      height: 88px;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    /* actions */
+    .actions-band {
+      padding: 20px 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      border-bottom: 1px dotted rgba(26,26,26,0.25);
+      background: var(--cream);
+    }
+
+    .btn-action {
+      border: 1.5px solid var(--charcoal);
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      padding: 18px 14px 14px;
+      text-transform: uppercase;
+      text-align: left;
+      background: var(--cream);
+      color: var(--charcoal);
+      transition: transform 0.08s, box-shadow 0.08s;
+      line-height: 1.4;
+    }
+    .btn-action .glyph { font-size: 16px; display: block; margin-bottom: 8px; }
+    .btn-action.primary { background: var(--orange); color: #fff; border-color: var(--orange); }
+    .btn-action:hover { transform: translate(-2px, -2px); box-shadow: 2px 2px 0 var(--charcoal); }
+    .btn-action.primary:hover { box-shadow: 2px 2px 0 rgba(0,0,0,0.4); }
+    .btn-action:active { transform: none; box-shadow: none; }
+
+    /* recent transactions */
+    .recent-section {
+      padding: 24px;
+      background: var(--cream);
+    }
+
+    .tx-row {
+      display: grid;
+      grid-template-columns: 36px 1fr auto;
+      gap: 10px;
+      align-items: start;
+      padding: 13px 0;
+      border-bottom: 1px dotted rgba(26,26,26,0.18);
+    }
+    .tx-row:last-child { border-bottom: none; }
+
+    .tx-idx {
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding-top: 2px;
+    }
+
+    .tx-body-desc {
+      font-size: 11.5px;
+      color: var(--charcoal);
+      line-height: 1.45;
+      word-break: break-word;
+    }
+    .tx-body-meta {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 3px;
+      letter-spacing: 0.08em;
+    }
+
+    .tx-amt {
+      font-family: var(--serif);
+      font-size: 19px;
+      font-weight: 700;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .tx-amt.pos { color: var(--orange); }
+    .tx-amt.neg { color: var(--charcoal); }
+
+    /* halftone band */
+    .halftone-band {
+      height: 44px;
+      background-color: var(--cream-deep);
+      background-image: radial-gradient(circle, rgba(26,26,26,0.18) 1px, transparent 1px);
+      background-size: 9px 9px;
+      border-top: 1px dotted rgba(26,26,26,0.25);
+    }
+
+    /* ─── HISTORY VIEW ───────────────────────────────── */
+    #history-view {
+      background: var(--charcoal);
+      min-height: 60vh;
+      padding: 28px 20px;
+    }
+
+    .hist-item {
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      border: 1px solid rgba(232,224,208,0.13);
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+
+    .hist-idx-col {
+      background: rgba(232,224,208,0.04);
+      border-right: 1px solid rgba(232,224,208,0.13);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 6px;
+    }
+    .hist-idx {
+      font-size: 8px;
+      letter-spacing: 0.08em;
+      color: rgba(232,224,208,0.25);
+      writing-mode: vertical-lr;
+    }
+
+    .hist-body {
+      padding: 13px 14px;
+      min-width: 0;
+    }
+    .hist-tag {
+      display: inline-block;
+      padding: 3px 7px;
+      font-size: 7.5px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+    .hist-tag.debt    { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(196,82,26,0.3); }
+    .hist-tag.payment { background: rgba(232,224,208,0.07); color: rgba(232,224,208,0.5); border: 1px solid rgba(232,224,208,0.15); }
+
+    .hist-desc {
+      font-size: 11.5px;
+      color: var(--cream);
+      line-height: 1.5;
+      word-break: break-word;
+    }
+    .hist-meta {
+      font-size: 8.5px;
+      color: rgba(232,224,208,0.3);
+      margin-top: 5px;
+      letter-spacing: 0.08em;
+    }
+
+    .hist-amt-col {
+      padding: 13px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+      border-left: 1px solid rgba(232,224,208,0.1);
+      min-width: 82px;
+    }
+    .hist-amt {
+      font-family: var(--serif);
+      font-size: 19px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .hist-amt.pos { color: var(--orange); }
+    .hist-amt.neg { color: rgba(232,224,208,0.65); }
+
+    .hist-bal-after {
+      font-size: 8px;
+      color: rgba(232,224,208,0.28);
+      margin-top: 5px;
+      letter-spacing: 0.06em;
+      text-align: right;
+    }
+
+    /* empty state */
+    .empty {
+      text-align: center;
+      padding: 56px 20px;
+    }
+    .empty svg { margin: 0 auto 20px; display: block; }
+    .empty-title {
+      font-family: var(--serif);
+      font-size: 22px;
+      color: rgba(232,224,208,0.3);
+      margin-bottom: 8px;
+    }
+    .empty-sub {
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      color: rgba(232,224,208,0.18);
+    }
+
+    /* ─── MODAL ──────────────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,15,15,0.82);
+      z-index: 200;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    @media (min-width: 600px) {
+      .modal-overlay.open { align-items: center; }
+    }
+
+    .modal {
+      background: var(--cream);
+      color: var(--charcoal);
+      width: 100%;
+      max-width: 460px;
+      border-top: 3px solid var(--orange);
+      position: relative;
+    }
+    @media (min-width: 600px) {
+      .modal { border: 1.5px solid var(--charcoal); border-top: 3px solid var(--orange); }
+    }
+
+    .modal-hdr {
+      padding: 18px 22px 15px;
+      border-bottom: 1px dotted rgba(26,26,26,0.28);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-hdr-title {
+      font-size: 9.5px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+    .modal-close {
+      background: none;
+      border: 1px solid var(--charcoal);
+      color: var(--charcoal);
+      width: 28px; height: 28px;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.1s, color 0.1s;
+    }
+    .modal-close:hover { background: var(--charcoal); color: var(--cream); }
+
+    .modal-body { padding: 22px; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-label {
+      display: block;
+      font-size: 8.5px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      border: 1.5px solid rgba(26,26,26,0.35);
+      background: #fff;
+      color: var(--charcoal);
+      font-family: var(--mono);
+      font-size: 14px;
+      padding: 11px 12px;
+      outline: none;
+      border-radius: 0;
+      -webkit-appearance: none;
+      transition: border-color 0.1s, box-shadow 0.1s;
+    }
+    .form-input:focus {
+      border-color: var(--orange);
+      box-shadow: 2px 2px 0 var(--orange);
+    }
+    .form-input.error { border-color: var(--orange); animation: shake 0.3s ease; }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .amt-wrap { position: relative; }
+    .amt-prefix {
+      position: absolute;
+      left: 12px; top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--serif);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--charcoal);
+      pointer-events: none;
+    }
+    .amt-input { padding-left: 24px !important; }
+
+    .radio-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .radio-opt input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .radio-opt { position: relative; }
+    .radio-lbl {
+      display: block;
+      padding: 11px 10px;
+      border: 1.5px solid rgba(26,26,26,0.22);
+      cursor: pointer;
+      font-size: 8.5px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: center;
+      transition: all 0.1s;
+      line-height: 1.5;
+    }
+    .radio-opt input:checked + .radio-lbl {
+      background: var(--charcoal);
+      color: var(--cream);
+      border-color: var(--charcoal);
+    }
+    .radio-lbl:hover { border-color: var(--charcoal); color: var(--charcoal); }
+
+    .modal-ftr {
+      padding: 16px 22px;
+      border-top: 1px dotted rgba(26,26,26,0.28);
+    }
+    .btn-submit {
+      width: 100%;
+      background: var(--orange);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      padding: 15px;
+      text-transform: uppercase;
+      transition: background 0.1s, transform 0.08s;
+    }
+    .btn-submit:hover { background: #B04416; }
+    .btn-submit:active { transform: translate(1px, 1px); }
+
+    /* ─── TOAST ──────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--charcoal);
+      color: var(--cream);
+      border-left: 3px solid var(--orange);
+      padding: 11px 20px;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      z-index: 300;
+      transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), opacity 0.28s;
+      opacity: 0;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* ─── RESPONSIVE TWEAKS ──────────────────────────── */
+    @media (max-width: 360px) {
+      .radio-grid { grid-template-columns: 1fr; }
+    }
+    @media (min-width: 640px) {
+      .balance-hero { padding: 40px 36px 32px; }
+      .actions-band { padding: 24px 36px; gap: 14px; }
+      .recent-section { padding: 28px 36px; }
+      .site-header { padding: 32px 36px 24px; }
+      #history-view { padding: 32px 36px; }
+    }
+    @media (min-width: 900px) {
+      .balance-amount { font-size: 120px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ▓▓ HEADER ▓▓ -->
+<header class="site-header">
+  <div class="reg reg-tl"></div>
+  <div class="reg reg-tr"></div>
+  <div class="reg reg-bl"></div>
+  <div class="reg reg-br"></div>
+  <div class="hdr-top">
+    <h1 class="site-title">DEBT<br>TRACKER</h1>
+    <span class="hdr-index">001</span>
+  </div>
+  <div class="hdr-meta">◇ ALAN &amp; EDISON · PERSONAL FINANCE SYSTEM · V1.0</div>
+</header>
+
+<!-- ▓▓ TAB NAV ▓▓ -->
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="balance">◆ BALANCE</button>
+  <button class="tab-btn" data-tab="history">◇ HISTORY</button>
+</nav>
+
+<!-- ▓▓ BALANCE VIEW ▓▓ -->
+<div id="balance-view" class="view active">
+
+  <!-- hero balance -->
+  <div class="balance-hero">
+    <div class="balance-left">
+      <div class="sec-label">◇ CURRENT BALANCE</div>
+      <div class="balance-amount" id="balance-amount">$0.00</div>
+      <span class="balance-tag settled" id="balance-tag">ALL SETTLED ◆</span>
+      <div class="balance-meta" id="balance-meta">NO TRANSACTIONS YET</div>
+    </div>
+    <!-- engineering diagram -->
+    <svg class="target-svg" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="45" cy="45" r="41" stroke="#1A1A1A" stroke-width="0.6" stroke-dasharray="2.5 3.5"/>
+      <circle cx="45" cy="45" r="30" stroke="#1A1A1A" stroke-width="0.6"/>
+      <circle cx="45" cy="45" r="19" stroke="#1A1A1A" stroke-width="0.6" stroke-dasharray="2.5 3.5"/>
+      <circle cx="45" cy="45" r="8"  stroke="#1A1A1A" stroke-width="0.6"/>
+      <circle cx="45" cy="45" r="2.5" fill="#C4521A"/>
+      <line x1="45" y1="2"  x2="45" y2="88" stroke="#1A1A1A" stroke-width="0.4"/>
+      <line x1="2"  y1="45" x2="88" y2="45" stroke="#1A1A1A" stroke-width="0.4"/>
+      <path d="M2 12 L2 2 L12 2"   stroke="#1A1A1A" stroke-width="1"/>
+      <path d="M78 2 L88 2 L88 12" stroke="#1A1A1A" stroke-width="1"/>
+      <path d="M2 78 L2 88 L12 88" stroke="#1A1A1A" stroke-width="1"/>
+      <path d="M78 88 L88 88 L88 78" stroke="#1A1A1A" stroke-width="1"/>
+    </svg>
+  </div>
+
+  <!-- action buttons -->
+  <div class="actions-band">
+    <button class="btn-action primary" onclick="openModal('debt')">
+      <span class="glyph">◆</span>
+      ADD DEBT
+    </button>
+    <button class="btn-action" onclick="openModal('payment')">
+      <span class="glyph">◇</span>
+      RECORD PAYMENT
+    </button>
+  </div>
+
+  <!-- recent -->
+  <div class="recent-section">
+    <div class="sec-label">◇ RECENT TRANSACTIONS</div>
+    <div id="recent-list">
+      <div class="empty" style="padding:36px 0;">
+        <p class="empty-sub" style="color:rgba(26,26,26,0.28);">NO TRANSACTIONS YET</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="halftone-band"></div>
+</div>
+
+<!-- ▓▓ HISTORY VIEW ▓▓ -->
+<div id="history-view" class="view">
+  <div class="sec-label" style="color:rgba(232,224,208,0.35);">◇ ALL TRANSACTIONS ·····················</div>
+  <div id="history-list">
+    <div class="empty">
+      <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+        <circle cx="36" cy="36" r="33" stroke="rgba(232,224,208,0.15)" stroke-width="0.6" stroke-dasharray="2 3"/>
+        <circle cx="36" cy="36" r="22" stroke="rgba(232,224,208,0.15)" stroke-width="0.6"/>
+        <circle cx="36" cy="36" r="11" stroke="rgba(232,224,208,0.15)" stroke-width="0.6" stroke-dasharray="2 3"/>
+        <circle cx="36" cy="36" r="2.5" fill="rgba(196,82,26,0.35)"/>
+      </svg>
+      <p class="empty-title">No history yet</p>
+      <p class="empty-sub">TRANSACTIONS WILL APPEAR HERE</p>
+    </div>
+  </div>
+</div>
+
+<!-- ▓▓ MODAL ▓▓ -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-hdr">
+      <span class="modal-hdr-title" id="modal-title">◆ ADD DEBT</span>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" for="f-amount">◇ AMOUNT</label>
+        <div class="amt-wrap">
+          <span class="amt-prefix">$</span>
+          <input type="number" id="f-amount" class="form-input amt-input"
+                 placeholder="0.00" min="0.01" step="0.01" inputmode="decimal">
+        </div>
+      </div>
+
+      <div class="form-group" id="grp-debt">
+        <div class="form-label">◇ DIRECTION</div>
+        <div class="radio-grid">
+          <div class="radio-opt">
+            <input type="radio" name="debt-dir" id="d-me" value="me" checked>
+            <label class="radio-lbl" for="d-me">I OWE<br>EDISON</label>
+          </div>
+          <div class="radio-opt">
+            <input type="radio" name="debt-dir" id="d-them" value="them">
+            <label class="radio-lbl" for="d-them">EDISON<br>OWES ME</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" id="grp-payment" style="display:none;">
+        <div class="form-label">◇ WHO PAID</div>
+        <div class="radio-grid">
+          <div class="radio-opt">
+            <input type="radio" name="pay-dir" id="p-me" value="me" checked>
+            <label class="radio-lbl" for="p-me">I PAID<br>EDISON</label>
+          </div>
+          <div class="radio-opt">
+            <input type="radio" name="pay-dir" id="p-them" value="them">
+            <label class="radio-lbl" for="p-them">EDISON<br>PAID ME</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="f-desc">◇ DESCRIPTION</label>
+        <input type="text" id="f-desc" class="form-input"
+               placeholder="What's this for?" maxlength="120">
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn-submit" onclick="submitTransaction()">RECORD TRANSACTION</button>
+    </div>
+  </div>
+</div>
+
+<!-- ▓▓ TOAST ▓▓ -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ────────────────────────────────────────────
+// balance > 0 → Edison owes me
+// balance < 0 → I owe Edison
+let state = { balance: 0, transactions: [] };
+let modalType = 'debt';
+
+// ─── PERSISTENCE ──────────────────────────────────────
+function load() {
+  try {
+    const s = localStorage.getItem('dt-v1');
+    if (s) state = JSON.parse(s);
+  } catch (_) {}
+}
+function save() {
+  localStorage.setItem('dt-v1', JSON.stringify(state));
+}
+
+// ─── FORMAT ───────────────────────────────────────────
+function fmtAmt(n) {
+  return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
+}
+function fmtDateShort(iso) {
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+}
+function pad(n) { return String(n).padStart(3, '0'); }
+function esc(s) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(s));
+  return d.innerHTML;
+}
+
+// ─── RENDER ───────────────────────────────────────────
+function render() {
+  renderBalance();
+  renderRecent();
+  renderHistory();
+}
+
+function renderBalance() {
+  const b = state.balance;
+  document.getElementById('balance-amount').textContent = fmtAmt(b);
+
+  const tag = document.getElementById('balance-tag');
+  if (b > 0.005) {
+    tag.textContent = 'EDISON OWES YOU';
+    tag.className = 'balance-tag edison-owes';
+  } else if (b < -0.005) {
+    tag.textContent = 'YOU OWE EDISON';
+    tag.className = 'balance-tag i-owe';
+  } else {
+    tag.textContent = 'ALL SETTLED ◆';
+    tag.className = 'balance-tag settled';
+  }
+
+  const txns = state.transactions;
+  const meta = document.getElementById('balance-meta');
+  if (txns.length) {
+    meta.textContent = 'LAST UPDATED: ' + fmtDate(txns[txns.length - 1].date);
+  } else {
+    meta.textContent = 'NO TRANSACTIONS YET';
+  }
+}
+
+function renderRecent() {
+  const el = document.getElementById('recent-list');
+  const txns = [...state.transactions].reverse().slice(0, 5);
+  if (!txns.length) {
+    el.innerHTML = `<div style="padding:36px 0;text-align:center;"><p style="font-size:9px;letter-spacing:.15em;color:rgba(26,26,26,.28);">NO TRANSACTIONS YET</p></div>`;
+    return;
+  }
+  const total = state.transactions.length;
+  el.innerHTML = txns.map((tx, i) => {
+    const pos = tx.delta > 0;
+    return `<div class="tx-row">
+      <div class="tx-idx">${pad(total - i)}</div>
+      <div>
+        <div class="tx-body-desc">${esc(tx.desc)}</div>
+        <div class="tx-body-meta">${fmtDateShort(tx.date)} · ${esc(tx.label)}</div>
+      </div>
+      <div class="tx-amt ${pos ? 'pos' : 'neg'}">${pos ? '+' : '−'}${fmtAmt(tx.amount)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  const txns = [...state.transactions].reverse();
+  if (!txns.length) {
+    el.innerHTML = `<div class="empty">
+      <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+        <circle cx="36" cy="36" r="33" stroke="rgba(232,224,208,0.15)" stroke-width=".6" stroke-dasharray="2 3"/>
+        <circle cx="36" cy="36" r="22" stroke="rgba(232,224,208,0.15)" stroke-width=".6"/>
+        <circle cx="36" cy="36" r="11" stroke="rgba(232,224,208,0.15)" stroke-width=".6" stroke-dasharray="2 3"/>
+        <circle cx="36" cy="36" r="2.5" fill="rgba(196,82,26,.35)"/>
+      </svg>
+      <p class="empty-title">No history yet</p>
+      <p class="empty-sub">TRANSACTIONS WILL APPEAR HERE</p>
+    </div>`;
+    return;
+  }
+  const total = state.transactions.length;
+  el.innerHTML = txns.map((tx, i) => {
+    const pos = tx.delta > 0;
+    const n = total - i;
+    const tagCls = (tx.type === 'debt') ? 'debt' : 'payment';
+    const balSign = tx.balAfter >= -0.005 ? '' : '−';
+    const balStatus = tx.balAfter > 0.005 ? 'THEY OWE' : tx.balAfter < -0.005 ? 'YOU OWE' : 'SETTLED';
+    return `<div class="hist-item">
+      <div class="hist-idx-col"><span class="hist-idx">${pad(n)}</span></div>
+      <div class="hist-body">
+        <span class="hist-tag ${tagCls}">${esc(tx.label)}</span>
+        <div class="hist-desc">${esc(tx.desc)}</div>
+        <div class="hist-meta">${fmtDate(tx.date)} · BAL: ${balSign}${fmtAmt(tx.balAfter)}</div>
+      </div>
+      <div class="hist-amt-col">
+        <div class="hist-amt ${pos ? 'pos' : 'neg'}">${pos ? '+' : '−'}${fmtAmt(tx.amount)}</div>
+        <div class="hist-bal-after">${balStatus}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── MODAL ────────────────────────────────────────────
+function openModal(type) {
+  modalType = type;
+  const title = document.getElementById('modal-title');
+  const gDebt = document.getElementById('grp-debt');
+  const gPay  = document.getElementById('grp-payment');
+
+  if (type === 'debt') {
+    title.textContent = '◆ ADD DEBT';
+    gDebt.style.display = 'block';
+    gPay.style.display  = 'none';
+  } else {
+    title.textContent = '◇ RECORD PAYMENT';
+    gDebt.style.display = 'none';
+    gPay.style.display  = 'block';
+  }
+
+  document.getElementById('f-amount').value = '';
+  document.getElementById('f-desc').value   = '';
+  document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('f-amount').focus(), 120);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+// ─── SUBMIT ───────────────────────────────────────────
+function submitTransaction() {
+  const amtRaw = parseFloat(document.getElementById('f-amount').value);
+  const desc   = document.getElementById('f-desc').value.trim();
+
+  let ok = true;
+  if (!amtRaw || amtRaw <= 0) {
+    const el = document.getElementById('f-amount');
+    el.classList.add('error');
+    setTimeout(() => el.classList.remove('error'), 600);
+    el.focus();
+    ok = false;
+  }
+  if (!desc) {
+    const el = document.getElementById('f-desc');
+    el.classList.add('error');
+    setTimeout(() => el.classList.remove('error'), 600);
+    if (ok) el.focus();
+    ok = false;
+  }
+  if (!ok) return;
+
+  let delta = 0;
+  let label = '';
+
+  if (modalType === 'debt') {
+    const dir = document.querySelector('input[name="debt-dir"]:checked').value;
+    if (dir === 'me') {
+      delta = -amtRaw;
+      label = 'I OWE EDISON';
+    } else {
+      delta = +amtRaw;
+      label = 'EDISON OWES ME';
+    }
+  } else {
+    const dir = document.querySelector('input[name="pay-dir"]:checked').value;
+    if (dir === 'me') {
+      delta = +amtRaw;
+      label = 'I PAID EDISON';
+    } else {
+      delta = -amtRaw;
+      label = 'EDISON PAID ME';
+    }
+  }
+
+  state.balance += delta;
+
+  state.transactions.push({
+    id:      Date.now(),
+    date:    new Date().toISOString(),
+    amount:  amtRaw,
+    delta,
+    balAfter: state.balance,
+    desc,
+    type:    modalType,
+    label
+  });
+
+  save();
+  render();
+  closeModal();
+  showToast('TRANSACTION RECORDED ◆');
+}
+
+// ─── TOAST ────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ─── TABS ─────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(tab + '-view').classList.add('active');
+  });
+});
+
+// ─── CLOSE MODAL ON BACKDROP / ESC ───────────────────
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ─── ENTER KEY IN FORM ────────────────────────────────
+document.getElementById('f-desc').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitTransaction();
+});
+
+// ─── BOOT ─────────────────────────────────────────────
+load();
+render();
+</script>
+</body>
+</html>
