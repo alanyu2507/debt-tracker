@@ -681,7 +681,7 @@
         <div class="radio-grid">
           <div class="radio-opt">
             <input type="radio" name="debt-dir" id="d-me" value="me" checked>
-            <label class="radio-lbl" for="d-me">I OWE<br>EDISON</label>
+            <label class="radio-lbl" for="d-me">ALAN OWES<br>EDISON</label>
           </div>
           <div class="radio-opt">
             <input type="radio" name="debt-dir" id="d-them" value="them">
@@ -695,7 +695,7 @@
         <div class="radio-grid">
           <div class="radio-opt">
             <input type="radio" name="pay-dir" id="p-me" value="me" checked>
-            <label class="radio-lbl" for="p-me">I PAID<br>EDISON</label>
+            <label class="radio-lbl" for="p-me">ALAN PAID<br>EDISON</label>
           </div>
           <div class="radio-opt">
             <input type="radio" name="pay-dir" id="p-them" value="them">
@@ -722,7 +722,7 @@
 <script>
 // ─── STATE ────────────────────────────────────────────
 // balance > 0 → Edison owes me
-// balance < 0 → I owe Edison
+// balance < 0 → Alan owes Edison
 let state = { balance: 0, transactions: [] };
 let modalType = 'debt';
 
@@ -770,7 +770,7 @@ function renderBalance() {
     tag.textContent = 'EDISON OWES YOU';
     tag.className = 'balance-tag edison-owes';
   } else if (b < -0.005) {
-    tag.textContent = 'YOU OWE EDISON';
+    tag.textContent = 'ALAN OWES EDISON';
     tag.className = 'balance-tag i-owe';
   } else {
     tag.textContent = 'ALL SETTLED ◆';
@@ -829,7 +829,7 @@ function renderHistory() {
     const n = total - i;
     const tagCls = (tx.type === 'debt') ? 'debt' : 'payment';
     const balSign = tx.balAfter >= -0.005 ? '' : '−';
-    const balStatus = tx.balAfter > 0.005 ? 'THEY OWE' : tx.balAfter < -0.005 ? 'YOU OWE' : 'SETTLED';
+    const balStatus = tx.balAfter > 0.005 ? 'THEY OWE' : tx.balAfter < -0.005 ? 'ALAN OWES' : 'SETTLED';
     return `<div class="hist-item">
       <div class="hist-idx-col"><span class="hist-idx">${pad(n)}</span></div>
       <div class="hist-body">
@@ -901,7 +901,7 @@ function submitTransaction() {
     const dir = document.querySelector('input[name="debt-dir"]:checked').value;
     if (dir === 'me') {
       delta = -amtRaw;
-      label = 'I OWE EDISON';
+      label = 'ALAN OWES EDISON';
     } else {
       delta = +amtRaw;
       label = 'EDISON OWES ME';
@@ -910,7 +910,7 @@ function submitTransaction() {
     const dir = document.querySelector('input[name="pay-dir"]:checked').value;
     if (dir === 'me') {
       delta = +amtRaw;
-      label = 'I PAID EDISON';
+      label = 'ALAN PAID EDISON';
     } else {
       delta = -amtRaw;
       label = 'EDISON PAID ME';
