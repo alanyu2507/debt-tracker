@@ -533,6 +533,33 @@
     .btn-submit:hover { background: #B04416; }
     .btn-submit:active { transform: translate(1px, 1px); }
 
+    /* ─── SYNC DOT ───────────────────────────────────── */
+    .sync-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 8px;
+      letter-spacing: 0.16em;
+      color: rgba(232,224,208,0.28);
+      vertical-align: middle;
+      margin-left: 10px;
+    }
+    #sync-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(232,224,208,0.15);
+      display: inline-block;
+      transition: background 0.4s;
+      flex-shrink: 0;
+    }
+    #sync-dot[data-s="live"]    { background: #4E7D60; }
+    #sync-dot[data-s="saving"]  { background: var(--orange); animation: pulse 0.8s infinite; }
+    #sync-dot[data-s="error"]   { background: #B04444; }
+    @keyframes pulse {
+      0%,100% { opacity: 1; } 50% { opacity: 0.3; }
+    }
+
     /* ─── TOAST ──────────────────────────────────────── */
     .toast {
       position: fixed;
@@ -581,7 +608,7 @@
     <h1 class="site-title">DEBT<br>TRACKER</h1>
     <span class="hdr-index">001</span>
   </div>
-  <div class="hdr-meta">◇ ALAN &amp; EDISON · PERSONAL FINANCE SYSTEM · V1.0</div>
+  <div class="hdr-meta">◇ ALAN &amp; EDISON · PERSONAL FINANCE SYSTEM · V1.0<span class="sync-wrap"><span id="sync-dot"></span>LIVE</span></div>
 </header>
 
 <!-- ▓▓ TAB NAV ▓▓ -->
@@ -726,6 +753,39 @@
 let state = { balance: 0, transactions: [] };
 let modalType = 'debt';
 
+// ─── FIREBASE ─────────────────────────────────────────
+const DB = 'https://debt-tracker-3c21d-default-rtdb.firebaseio.com/state.json';
+
+function syncDot(s) {
+  const el = document.getElementById('sync-dot');
+  if (el) el.dataset.s = s;
+}
+
+// Firebase stores arrays as objects; convert back on read
+function normalizeFromFirebase(data) {
+  if (!data) return { balance: 0, transactions: [] };
+  const txns = data.transactions;
+  return {
+    balance: typeof data.balance === 'number' ? data.balance : 0,
+    transactions: !txns ? [] : Array.isArray(txns) ? txns : Object.values(txns).filter(Boolean)
+  };
+}
+
+function connectFirebase() {
+  const source = new EventSource(DB);
+  source.addEventListener('put', e => {
+    const incoming = normalizeFromFirebase(JSON.parse(e.data).data);
+    // Ignore echo of our own save by comparing serialized state
+    if (JSON.stringify(incoming) !== JSON.stringify(state)) {
+      state = incoming;
+      localStorage.setItem('dt-v1', JSON.stringify(state));
+      render();
+    }
+    syncDot('live');
+  });
+  source.onerror = () => syncDot('error');
+}
+
 // ─── PERSISTENCE ──────────────────────────────────────
 function load() {
   try {
@@ -733,8 +793,17 @@ function load() {
     if (s) state = JSON.parse(s);
   } catch (_) {}
 }
+
 function save() {
   localStorage.setItem('dt-v1', JSON.stringify(state));
+  syncDot('saving');
+  fetch(DB, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(state)
+  })
+    .then(() => syncDot('live'))
+    .catch(() => syncDot('error'));
 }
 
 // ─── FORMAT ───────────────────────────────────────────
@@ -971,6 +1040,7 @@ document.getElementById('f-desc').addEventListener('keydown', e => {
 // ─── BOOT ─────────────────────────────────────────────
 load();
 render();
+connectFirebase();
 </script>
 </body>
 </html>
