@@ -685,7 +685,7 @@
           </div>
           <div class="radio-opt">
             <input type="radio" name="debt-dir" id="d-them" value="them">
-            <label class="radio-lbl" for="d-them">EDISON<br>OWES ME</label>
+            <label class="radio-lbl" for="d-them">EDISON OWES<br>ALAN</label>
           </div>
         </div>
       </div>
@@ -699,7 +699,7 @@
           </div>
           <div class="radio-opt">
             <input type="radio" name="pay-dir" id="p-them" value="them">
-            <label class="radio-lbl" for="p-them">EDISON<br>PAID ME</label>
+            <label class="radio-lbl" for="p-them">EDISON PAID<br>ALAN</label>
           </div>
         </div>
       </div>
@@ -767,7 +767,7 @@ function renderBalance() {
 
   const tag = document.getElementById('balance-tag');
   if (b > 0.005) {
-    tag.textContent = 'EDISON OWES YOU';
+    tag.textContent = 'EDISON OWES ALAN';
     tag.className = 'balance-tag edison-owes';
   } else if (b < -0.005) {
     tag.textContent = 'ALAN OWES EDISON';
@@ -829,7 +829,7 @@ function renderHistory() {
     const n = total - i;
     const tagCls = (tx.type === 'debt') ? 'debt' : 'payment';
     const balSign = tx.balAfter >= -0.005 ? '' : '−';
-    const balStatus = tx.balAfter > 0.005 ? 'THEY OWE' : tx.balAfter < -0.005 ? 'ALAN OWES' : 'SETTLED';
+    const balStatus = tx.balAfter > 0.005 ? 'EDISON OWES' : tx.balAfter < -0.005 ? 'ALAN OWES' : 'SETTLED';
     return `<div class="hist-item">
       <div class="hist-idx-col"><span class="hist-idx">${pad(n)}</span></div>
       <div class="hist-body">
@@ -904,7 +904,7 @@ function submitTransaction() {
       label = 'ALAN OWES EDISON';
     } else {
       delta = +amtRaw;
-      label = 'EDISON OWES ME';
+      label = 'EDISON OWES ALAN';
     }
   } else {
     const dir = document.querySelector('input[name="pay-dir"]:checked').value;
@@ -913,7 +913,7 @@ function submitTransaction() {
       label = 'ALAN PAID EDISON';
     } else {
       delta = -amtRaw;
-      label = 'EDISON PAID ME';
+      label = 'EDISON PAID ALAN';
     }
   }
 
